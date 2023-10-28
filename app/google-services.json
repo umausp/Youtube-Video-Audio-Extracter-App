@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1074987999682",
+    "project_id": "imagetube-eb723",
+    "storage_bucket": "imagetube-eb723.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074987999682:android:cfa0955757cbcb32e1765b",
+        "android_client_info": {
+          "package_name": "com.vedic.img"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-sTQoxBhgAlLjfRZJPw_5IUgFM3hVp-Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
