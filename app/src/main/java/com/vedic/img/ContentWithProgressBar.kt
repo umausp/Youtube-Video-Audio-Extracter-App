@@ -24,7 +24,7 @@ fun ContentWithProgressBar(isLoading: Boolean) {
             CircularProgressIndicator() // Display the circular progress bar while loading
         } else {
             // Your content when not loading
-            Text("Loaded Content")
+//            Text("Loaded Content")
         }
     }
 }

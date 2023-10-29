@@ -8,6 +8,7 @@ def load_video_from_url(youtube_url):
         yt = YouTube(youtube_url)
         streams = yt.streams
 
+
         current_epoch_time = int(time.time())
 
         video_audio_streams = yt.streams.filter(only_video=True)
@@ -17,6 +18,9 @@ def load_video_from_url(youtube_url):
 
         best_resolution_download_url = top_resolutions.url
         best_resolution = top_resolutions.resolution
+        audio_stream = yt.streams.filter(only_audio=True).first()
+        audio_url = audio_stream.url
+
 
         # Filter streams to select only video streams
         # video_streams = [stream for stream in streams if stream.mime_type.startswith('video/')]
@@ -36,16 +40,12 @@ def load_video_from_url(youtube_url):
 
         # Select the top 2 video and audio streams
         best_2_video_audio_streams = video_audio_streams[:2]
+        # https://img.youtube.com/vi/9Cp-hNvSWZs/maxresdefault.jpg
+        # Replace with the actual YouTube video ID
+        video_id = yt.video_id
 
-
-    # Sort the video streams by resolution in descending order
-    #     video_streams.sort(key=lambda stream: stream.resolution, reverse=False)
-
-    # Select the stream with the best resolution and audio
-    #     top_3_resolutions = video_audio_streams[0]
-
-    # Select the top 3 video streams
-    #     top_3_resolutions = streams[:3]
+        # Construct the maximum resolution thumbnail URL
+        thumbnail_url = f"https://img.youtube.com/vi/{video_id}/sddefault.jpg"
 
         resolutions = {}
         response = []
@@ -54,7 +54,7 @@ def load_video_from_url(youtube_url):
             if stream.resolution:
                 my_map = {}
                 download_url = stream.url
-                thumbnail = yt.thumbnail_url
+                thumbnail = thumbnail_url
                 underscored_string = stream.title.replace(" ", "_")
                 my_map["download_url"] = download_url
                 my_map["name"] = stream.title
@@ -63,6 +63,8 @@ def load_video_from_url(youtube_url):
                 my_map["title"] = f"{underscored_string}_{current_epoch_time}.mp4"
                 my_map["best_resolution_video_only"] = best_resolution_download_url
                 my_map["best_resolution"] = best_resolution
+                my_map["audio_url"] = audio_url
+                my_map["youtube_url"] = youtube_url
                 response.append(my_map)
 
         # Print the resolution URLs

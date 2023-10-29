@@ -22,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.vedic.img.analytics.SendEvents
+import com.vedic.img.audio.AudioPlayerService
 import com.vedic.img.list.ImageList
 import com.vedic.img.list.SearchYoutubeBox
 import com.vedic.img.ui.theme.ImgTheme
@@ -33,7 +34,6 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     private val youtubeViewModel by viewModels<YoutubeLoadViewModel>()
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         callPythonModule()
@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
             ImgTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color.Black
+                    color = Color.White
                 ) {
                     Column {
                         SearchYoutubeBox()
@@ -54,14 +54,31 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun handleIntentUrl() {
-        if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        getYoutubeData()
+    }
+
+    private fun getYoutubeData() {
+//        if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
             val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
             if (sharedText != null) {
                 Log.d("intentHandle", sharedText)
                 youtubeViewModel.youtubeUrl.value = sharedText
             }
+//        }
+    }
+
+    private fun handleIntentUrl() {
+        getYoutubeData()
+        if (intent?.data != null) {
+            val sharedText = intent?.data?.toString()
+            if (sharedText != null) {
+                Log.d("intentHandle", sharedText)
+                youtubeViewModel.youtubeUrl.value = sharedText
+            }
         }
+
     }
 
     private fun callPythonModule() {
@@ -90,17 +107,32 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-//        lifecycleScope.launch {
-//            youtubeViewModel.bestResolutionUrl.collectLatest {
-//                if (it.first.isNotEmpty()) {
-////                    val intent = Intent(this@MainActivity, FrameListActivity::class.java)
-////                    intent.putExtra("uri", it.first)
-////                    intent.putExtra("name", it.second)
-////                    startActivity(intent)
-////                    youtubeViewModel.bestResolutionUrl.value = Pair("", "")
-//                }
-//            }
-//        }
+        val serviceIntent = Intent(this@MainActivity, AudioPlayerService::class.java)
+        lifecycleScope.launch {
+            youtubeViewModel.listenAudio.collectLatest {
+                if (it != null) {
+                    stopService(serviceIntent)
+                    serviceIntent.putExtra("audioUrl", it.audio_url)
+                    serviceIntent.putExtra("name", it.name)
+                    serviceIntent.putExtra("youtubeUri", it.youtube_url)
+                    startService(serviceIntent)
+                    youtubeViewModel.listenAudio.value = null
+                }
+            }
+        }
+
+
+        lifecycleScope.launch {
+            youtubeViewModel.bestResolutionUrl.collectLatest {
+                if (it.first.isNotEmpty()) {
+                    val intent = Intent(this@MainActivity, VideoActivity::class.java)
+                    intent.putExtra("uri", it.first)
+                    intent.putExtra("name", it.second)
+                    startActivity(intent)
+                    youtubeViewModel.bestResolutionUrl.value = Pair("", "")
+                }
+            }
+        }
     }
 
     override fun onResume() {
@@ -121,7 +153,10 @@ class MainActivity : ComponentActivity() {
 
     private fun askNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) ==
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) ==
                 PackageManager.PERMISSION_GRANTED
             ) {
                 // FCM SDK (and your app) can post notifications.
@@ -136,4 +171,5 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }

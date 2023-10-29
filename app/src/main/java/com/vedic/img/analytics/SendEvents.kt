@@ -28,6 +28,13 @@ object SendEvents {
         Firebase.analytics.logEvent("download_clicked", searchClickEvent)
     }
 
+    fun sendDownloadAudioClickEvent(data: YoutubeData) {
+        val searchClickEvent = Bundle().apply {
+            putString(FirebaseAnalytics.Param.TERM, data.toString())
+        }
+        Firebase.analytics.logEvent("download_clicked", searchClickEvent)
+    }
+
     fun sendResponseEvent(data: String) {
         val searchClickEvent = Bundle().apply {
             putString(FirebaseAnalytics.Param.ITEMS, data)

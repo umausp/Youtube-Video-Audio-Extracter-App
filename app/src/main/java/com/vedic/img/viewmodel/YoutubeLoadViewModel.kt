@@ -21,6 +21,8 @@ class YoutubeLoadViewModel : ViewModel() {
     val downloadUrl = MutableStateFlow(Pair("", ""))
     val bestResolutionUrl = MutableStateFlow(Pair("", ""))
 
+    val listenAudio = MutableStateFlow<YoutubeData?>(null)
+
     private val _isLoadingData = MutableStateFlow(false)
     val isLoadingData: StateFlow<Boolean> = _isLoadingData
 

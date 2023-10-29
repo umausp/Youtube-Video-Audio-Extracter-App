@@ -4,6 +4,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.opengl.Visibility
 import android.os.Environment
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -42,12 +43,22 @@ import com.vedic.img.model.YoutubeData
 import com.vedic.img.viewmodel.YoutubeLoadViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import coil.compose.AsyncImagePainter
+import coil.compose.ImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
 import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
+import coil.request.ImageRequest
 import com.vedic.img.ContentWithProgressBar
 import com.vedic.img.analytics.SendEvents
 
@@ -69,46 +80,54 @@ fun ImageList() {
 @Composable
 fun ListItemContent(item: YoutubeData) {
     val viewModel = viewModel<YoutubeLoadViewModel>()
-    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
             .clickable {
                 viewModel.downloadUrl.value = Pair(item.download_url, item.name)
                 SendEvents.sendWatchClickEvent(item, "image_click")
             },
     ) {
+//
+//        AsyncImage(
+//            modifier = imageModifier,
+//            model = item.thumb_nail,
+//            contentDescription = item.name,
+//        )
 
-        val imageModifier = Modifier
-            .fillMaxSize()
-            .aspectRatio(1.3f)
-            .clip(RoundedCornerShape(16.dp))
-
-        AsyncImage(
-            modifier = imageModifier,
-            model =  item.thumb_nail,
-            contentDescription = null,
-        )
+        SubcomposeAsyncImage(
+            model = item.thumb_nail,
+            contentDescription = item.name,
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+        ) {
+            val state = painter.state
+            if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
+                CircularProgressIndicator()
+            } else {
+                SubcomposeAsyncImageContent()
+            }
+        }
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
             text = "${item.resolution} - ${item.name}",
             fontSize = 18.sp,
-            color = Color.White
+            color = Color.Black,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+//        Spacer(modifier = Modifier.height(8.dp))
 
-        Row {
-            CenteredImage(painterResource(id = R.drawable.baseline_download_24), "Download") {
-                downloadVideo(context, item.download_url, item.title)
-                Toast.makeText(context, "Download Started Please wait!", Toast.LENGTH_SHORT).show()
-                SendEvents.sendDownloadClickEvent(item)
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
+        Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+//            CenteredImage(painterResource(id = R.drawable.baseline_download_24), "Download") {
+//                downloadVideo(context, item.download_url, item.title)
+//                Toast.makeText(context, "Download Started Please wait!", Toast.LENGTH_SHORT).show()
+//                SendEvents.sendDownloadClickEvent(item)
+//            }
+//
+//            Spacer(modifier = Modifier.width(8.dp))
 
             CenteredImage(painterResource(id = R.drawable.baseline_play_arrow_24), "Watch") {
                 viewModel.downloadUrl.value = Pair(item.download_url, item.name)
@@ -123,22 +142,24 @@ fun ListItemContent(item: YoutubeData) {
 //            ) {
 //                viewModel.bestResolutionUrl.value = Pair(item.best_resolution_video_only, item.title)
 //            }
+
+            CenteredImage(
+                iconPainter = painterResource(id = R.drawable.baseline_audiotrack_24),
+                text = "Listen Audio"
+            ) {
+                viewModel.listenAudio.value = item
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+//            CenteredImage(
+//                iconPainter = painterResource(id = R.drawable.baseline_audio_file_24),
+//                text = "Only Video"
+//            ) {
+//                viewModel.bestResolutionUrl.value = Pair(item.best_resolution_video_only, item.name)
+//                SendEvents.sendWatchClickEvent(item, "watch_video_only")
+//            }
         }
-    }
-}
-
-fun openVideoWithIntent(context: Context, videoUri: String?) {
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(videoUri))
-    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-    intent.setPackage("com.android.chrome")
-//    intent.setPackage("com.android.chrome") // Specify the Chrome package name
-
-
-    if (intent.resolveActivity(context.packageManager) != null) {
-        context.startActivity(intent)
-    } else {
-        // Handle the case where no app is available to handle the Intent
-        // You can show a message or provide an alternative action.
     }
 }
 
@@ -153,8 +174,7 @@ fun downloadVideo(context: Context, videoUrl: String, fileName: String) {
     val directory = Environment.DIRECTORY_DOWNLOADS
     request.setDestinationInExternalPublicDir(directory, fileName)
 
-    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-
+    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED or DownloadManager.Request.VISIBILITY_VISIBLE)
     downloadManager.enqueue(request)
 }
 
@@ -187,8 +207,9 @@ fun CenteredImage(iconPainter: Painter, text: String, onClick: () -> Unit) {
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = text,
-            fontSize = 12.sp,
-            color = Color.White,
+            fontSize = 16.sp,
+            color = Color.Black,
         )
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
