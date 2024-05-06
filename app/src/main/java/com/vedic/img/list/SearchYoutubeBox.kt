@@ -1,5 +1,6 @@
 package com.vedic.img.list
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
@@ -9,9 +10,10 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,10 +25,12 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.vedic.img.R
 import com.vedic.img.analytics.SendEvents
 import com.vedic.img.viewmodel.YoutubeLoadViewModel
 
@@ -57,14 +61,20 @@ fun SearchYoutubeBox() {
     }
 
     OutlinedTextField(
+        colors = TextFieldDefaults.textFieldColors(),
         value = text,
+        placeholder = {
+            Text(
+                text,
+                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
+            )
+        },
         onValueChange = {
             text = it
             isError = false
             message = "Copy Youtube Url and paste above"
         },
-        colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.White),
-        label = { Text("Paste Youtube Url...") },
         trailingIcon = {
             if (text.isNotEmpty()) {
                 IconButton(onClick = {
@@ -99,7 +109,10 @@ fun SearchYoutubeBox() {
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = message,
+                color = Color.Magenta,
                 textAlign = TextAlign.Start,
+                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
             )
         },
         isError = isError,
